@@ -19,13 +19,13 @@ docker.run:
 		go-planigramme
 
 docker.postgres:
-	docker run --rm -d \
+	docker run -d --rm \
     --name planigramme-postgres \
     --network planigramme-network \
     -e POSTGRES_USER=${DB_USER} \
     -e POSTGRES_PASSWORD=${DB_PASSWORD} \
     -e POSTGRES_DB=${DB_NAME} \
-    -v ${HOME}/planigramme-postgres/data/:/var/lib/postgresql/data \
+    -v planigramme-pgdata:/var/lib/postgresql \
     -p ${DB_PORT}:5432 \
     postgres
 

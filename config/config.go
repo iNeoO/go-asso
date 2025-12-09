@@ -1,4 +1,4 @@
-package configs
+package config
 
 import (
 	"os"
@@ -8,7 +8,7 @@ import (
 	"github.com/gofiber/fiber/v2"
 )
 
-func FiberConfig() fiber.Config {
+func Fiber() fiber.Config {
 	readTimeoutSecondsCount, _ := strconv.Atoi(os.Getenv("SERVER_READ_TIMEOUT"))
 
 	return fiber.Config{
