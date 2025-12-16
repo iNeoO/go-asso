@@ -37,3 +37,6 @@ migrate.down:
 
 migrate.force:
 	migrate -path $(MIGRATIONS_FOLDER) -database "$(DB_URL)" force $(version)
+
+swag:
+	swag init

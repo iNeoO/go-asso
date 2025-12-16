@@ -7,11 +7,10 @@ import (
 	_ "github.com/joho/godotenv/autoload"
 
 	"github.com/ineoo/go-planigramme/config"
+	swaggerapi "github.com/ineoo/go-planigramme/internal/api/swagger"
+	userapi "github.com/ineoo/go-planigramme/internal/api/user"
 	"github.com/ineoo/go-planigramme/internal/database"
-	fiberhandler "github.com/ineoo/go-planigramme/internal/http/fiber"
 	"github.com/ineoo/go-planigramme/pkg/utils"
-	"github.com/ineoo/go-planigramme/user"
-	userpostgres "github.com/ineoo/go-planigramme/user/postgres"
 )
 
 // @title API
@@ -20,9 +19,8 @@ import (
 // @termsOfService http://swagger.io/terms/
 // @contact.name go-planigramme
 // @contact.email go-planigramme@mail.com
-// @license.name Apache 2.0
-// @license.url http://www.apache.org/licenses/LICENSE-2.0.html
-// @securityDefinitions.apikey ApiKeyAuth
+// @license.name MIT
+// @license.url https://mit-license.org/
 // @in header
 // @name Authorization
 // @BasePath /api
@@ -35,11 +33,10 @@ func main() {
 	}
 	defer db.Close()
 
-	userRepo := userpostgres.NewRepository(db)
-	userService := user.NewService(userRepo)
-	userHandler := fiberhandler.NewUserHandler(userService)
+	swaggerapi.RegisterRoutes(app)
 
-	fiberhandler.Register(app, userHandler)
+	apiGroup := app.Group("/api/v1")
+	userapi.RegisterRoutes(apiGroup, db)
 
 	utils.StartServerWithGracefulShutdown(app)
 }
