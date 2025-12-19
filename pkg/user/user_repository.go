@@ -16,6 +16,7 @@ type User struct {
 	FirstName    string    `db:"first_name"`
 	LastName     string    `db:"last_name"`
 	Email        string    `db:"email"`
+	IsEmailVerified bool   `db:"is_email_verified" default:"false"`
 	PasswordHash string    `db:"password_hash"`
 }
 

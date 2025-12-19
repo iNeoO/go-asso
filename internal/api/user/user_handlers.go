@@ -46,11 +46,16 @@ func CreateUser(service *userdomain.Service) fiber.Handler {
 			return c.Status(fiber.StatusBadRequest).JSON(UserErrorResponse(errors.New("invalid request payload")))
 		}
 
+		passwordHash, err := utils.HashPassword(payload.Password)
+		if err != nil {
+			return c.Status(fiber.StatusInternalServerError).JSON(UserErrorResponse(errors.New("failed to hash password")))
+		}
+
 		newUser := &userdomain.User{
 			FirstName:    payload.FirstName,
 			LastName:     payload.LastName,
 			Email:        payload.Email,
-			PasswordHash: utils.HashPassword(payload.Password),
+			PasswordHash: passwordHash,
 		}
 
 		u, err := service.Create(newUser)

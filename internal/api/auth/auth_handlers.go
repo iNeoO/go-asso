@@ -4,13 +4,13 @@ import (
 	"errors"
 
 	"github.com/gofiber/fiber/v2"
-	"github.com/ineoo/go-planigramme/internal/utils"
-	authdomain "github.com/ineoo/go-planigramme/pkg/auth"
+	httpUtils "github.com/ineoo/go-planigramme/internal/utils"
 	sessiondomain "github.com/ineoo/go-planigramme/pkg/session"
 	userdomain "github.com/ineoo/go-planigramme/pkg/user"
+	cryptoutils "github.com/ineoo/go-planigramme/pkg/utils"
 )
 
-func Login(authService *authdomain.Service, userService *userdomain.Service, sessionService *sessiondomain.Service) fiber.Handler {
+func Login(userService *userdomain.Service, sessionService *sessiondomain.Service) fiber.Handler {
 	return func(c *fiber.Ctx) error {
 		payload := new(LoginRequest)
 		if err := c.BodyParser(payload); err != nil {
@@ -20,23 +20,23 @@ func Login(authService *authdomain.Service, userService *userdomain.Service, ses
 		if err != nil {
 			return c.Status(fiber.StatusUnauthorized).JSON(AuthErrorResponse(errors.New("invalid email or password")))
 		}
-		if !authService.CheckPasswordHash(payload.Password, u.PasswordHash) {
+		if !cryptoutils.CheckPasswordHash(payload.Password, u.PasswordHash) {
 			return c.Status(fiber.StatusUnauthorized).JSON(AuthErrorResponse(errors.New("invalid email or password")))
 		}
 
-		authToken, err := authService.GenerateAuthToken(u.Email, u.ID)
+		authToken, err := cryptoutils.GenerateAuthToken(u.Email, u.ID)
 		if err != nil {
 			return c.Status(fiber.StatusInternalServerError).JSON(AuthErrorResponse(errors.New("failed to generate auth token")))
 		}
-		refreshToken, err := authService.GenerateRefreshToken(u.Email, u.ID)
+		refreshToken, err := cryptoutils.GenerateRefreshToken(u.Email, u.ID)
 		if err != nil {
 			return c.Status(fiber.StatusInternalServerError).JSON(AuthErrorResponse(errors.New("failed to generate refresh token")))
 		}
 
 		sesion := &sessiondomain.Session{
-			UserID:       u.ID,
-			ExpiresAt:    refreshToken.ExpiresAt,
-			Token: refreshToken.Token,
+			UserID:    u.ID,
+			ExpiresAt: refreshToken.ExpiresAt,
+			Token:     refreshToken.Token,
 		}
 
 		_, err = sessionService.Create(sesion)
@@ -44,19 +44,20 @@ func Login(authService *authdomain.Service, userService *userdomain.Service, ses
 			return c.Status(fiber.StatusInternalServerError).JSON(AuthErrorResponse(errors.New("failed to create session")))
 		}
 
-		cookie :=utils.CreateRefreshCookie(refreshToken.Token, refreshToken.ExpiresAt)
+		cookie := httpUtils.CreateRefreshCookie(refreshToken.Token, refreshToken.ExpiresAt)
 
 		c.Cookie(cookie)
-		
+
 		return c.JSON(AuthSuccessResponse(&AuthData{
 			Token:     authToken.Token,
-			ExpiresAt: authToken.ExpiresAt.UTC().Unix(),
+			ExpiresAt: authToken.ExpiresAt.Unix(),
 		}))
 	}
 }
 
-func Logout(authService *authdomain.Service, userService *userdomain.Service, sessionService *sessiondomain.Service) fiber.Handler {
+func Logout(sessionService *sessiondomain.Service) fiber.Handler {
 	return func(c *fiber.Ctx) error {
+		_ = sessionService
 		// Implementation of logout handler
 		return nil
 	}

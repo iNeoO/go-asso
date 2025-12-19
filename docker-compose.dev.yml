@@ -1,0 +1,44 @@
+services:
+  api:
+    image: cosmtrek/air:latest
+    container_name: planigramme-api
+    working_dir: /app
+    command: ["air", "-c", ".air.toml"]
+    env_file:
+      - .env
+    environment:
+      - GO111MODULE=on
+      - GOFLAGS=-buildvcs=false
+    volumes:
+      - .:/app
+      - go-build:/root/.cache/go-build
+      - go-mod:/go/pkg/mod
+    ports:
+      - "5000:5000"
+    depends_on:
+      - postgres
+    networks:
+      - planigramme-network
+
+  postgres:
+    image: postgres:16-alpine
+    container_name: planigramme-postgres
+    environment:
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${DB_NAME}
+    volumes:
+      - planigramme-pgdata:/var/lib/postgresql/data
+    ports:
+      - "5440:5432"
+    networks:
+      - planigramme-network
+
+networks:
+  planigramme-network:
+    name: planigramme-network
+
+volumes:
+  planigramme-pgdata:
+  go-build:
+  go-mod:
