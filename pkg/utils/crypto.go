@@ -15,7 +15,7 @@ type TokenGenerated struct {
 }
 
 func HashPassword(password string) (string, error) {
-	bytes, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
+	bytes, err := bcrypt.GenerateFromPassword([]byte(password), 12)
 	return string(bytes), err
 }
 
@@ -37,6 +37,32 @@ func GenerateAuthToken(email string, userID uuid.UUID) (*TokenGenerated, error) 
 		return nil, err
 	}
 	return &TokenGenerated{Token: t, ExpiresAt: exp}, nil
+}
+
+type Claims struct {
+	Email  string    `json:"email"`
+	UserID uuid.UUID `json:"user_id"`
+	jwt.RegisteredClaims
+}
+
+func VerifToken(secret string, tokenString string) (*Claims, error) {
+	if tokenString == "" || secret == "" {
+		return nil, jwt.ErrTokenMalformed
+	}
+	parsed, err := jwt.ParseWithClaims(tokenString, &Claims{}, func(t *jwt.Token) (interface{}, error) {
+		if _, ok := t.Method.(*jwt.SigningMethodHMAC); !ok {
+			return nil, jwt.ErrSignatureInvalid
+		}
+		return []byte(secret), nil
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	if claims, ok := parsed.Claims.(*Claims); ok && parsed.Valid {
+		return claims, nil
+	}
+	return nil, jwt.ErrTokenInvalidClaims
 }
 
 func GenerateRefreshToken(email string, userID uuid.UUID) (*TokenGenerated, error) {

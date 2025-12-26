@@ -10,7 +10,7 @@ CREATE TABLE users (
     first_name VARCHAR(255) NOT NULL,
     last_name VARCHAR(255) NOT NULL,
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-    updated_at TIMESTAMPTZ NULL
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
 CREATE TABLE sessions (
@@ -26,7 +26,7 @@ CREATE INDEX sessions_user_id_idx ON sessions(user_id);
 CREATE INDEX sessions_expires_at_idx ON sessions(expires_at);
 
 CREATE TABLE roles_enum (
-    id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+    id VARCHAR(50) DEFAULT NOT NULL PRIMARY KEY,
     name VARCHAR(50) UNIQUE NOT NULL
 );
 
@@ -35,18 +35,17 @@ CREATE TABLE organizations (
     id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
     name VARCHAR(255) NOT NULL,
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-    updated_at TIMESTAMPTZ NULL
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
 CREATE TABLE user_organizations (
-    id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
     user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     organization_id UUID NOT NULL REFERENCES organizations(id) ON DELETE CASCADE,
-    role_id UUID NOT NULL REFERENCES roles_enum(id),
+    role_id VARCHAR(50) NOT NULL REFERENCES roles_enum(id),
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-    updated_at TIMESTAMPTZ NULL,
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
 
-    UNIQUE (user_id, organization_id)
+    PRIMARY KEY (user_id, organization_id)
 );
 
 CREATE INDEX user_organizations_organization_id_idx ON user_organizations(organization_id);
@@ -62,7 +61,7 @@ CREATE TABLE activities (
     duration_minutes INT  NOT NULL CHECK (duration_minutes > 0),
     capacity INT NOT NULL CHECK (capacity >= 0),
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-    updated_at TIMESTAMPTZ NULL
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
 CREATE INDEX activities_organization_id_starts_at_idx ON activities (organization_id, starts_at);
@@ -77,7 +76,7 @@ CREATE TABLE registrations (
     activity_id UUID NOT NULL REFERENCES activities(id) ON DELETE CASCADE,
     status_id UUID NOT NULL REFERENCES registrations_status_enum(id),
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-    updated_at TIMESTAMPTZ NULL,
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
 
     PRIMARY KEY (user_id, activity_id)
 );

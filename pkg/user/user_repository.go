@@ -8,16 +8,15 @@ import (
 	"github.com/jmoiron/sqlx"
 )
 
-
 type User struct {
-	ID           uuid.UUID `db:"id"`
-	CreatedAt    time.Time `db:"created_at"`
-	UpdatedAt    time.Time `db:"updated_at"`
-	FirstName    string    `db:"first_name"`
-	LastName     string    `db:"last_name"`
-	Email        string    `db:"email"`
-	IsEmailVerified bool   `db:"is_email_verified" default:"false"`
-	PasswordHash string    `db:"password_hash"`
+	ID              uuid.UUID `db:"id"`
+	CreatedAt       time.Time `db:"created_at"`
+	UpdatedAt       time.Time `db:"updated_at"`
+	FirstName       string    `db:"first_name"`
+	LastName        string    `db:"last_name"`
+	Email           string    `db:"email"`
+	IsEmailVerified bool      `db:"is_email_verified" default:"false"`
+	PasswordHash    string    `db:"password_hash"`
 }
 
 type Repository struct {
@@ -48,7 +47,7 @@ func (r *Repository) GetByEmail(email string) (*User, error) {
 
 func (r *Repository) List() (*[]User, error) {
 	const query = `SELECT * FROM users`
-	var users []User
+	users := make([]User, 0)
 	if err := r.db.SelectContext(context.Background(), &users, query); err != nil {
 		return nil, err
 	}

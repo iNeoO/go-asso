@@ -8,6 +8,5 @@ import (
 
 func registerRoutes(a fiber.Router) {
 	route := a.Group("/swagger")
-
 	route.Get("*", swagger.HandlerDefault)
 }

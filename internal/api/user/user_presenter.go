@@ -3,9 +3,9 @@ package userapi
 import (
 	"time"
 
-	"github.com/gofiber/fiber/v2"
 	"github.com/google/uuid"
 
+	commonapi "github.com/ineoo/go-planigramme/internal/api/common"
 	userdomain "github.com/ineoo/go-planigramme/pkg/user"
 )
 
@@ -18,7 +18,24 @@ type User struct {
 	Email     string    `json:"email"`
 }
 
-func UserSuccessResponse(data *userdomain.User) *fiber.Map {
+// @name UserEnvelope
+type UserEnvelope struct {
+	Status bool    `json:"status"`
+	Data   User    `json:"data"`
+	Error  *string `json:"error"`
+}
+
+// @name UsersEnvelope
+type UsersEnvelope struct {
+	Status bool    `json:"status"`
+	Data   []User  `json:"data"`
+	Count  int     `json:"count"`
+	Error  *string `json:"error"`
+}
+
+type UserErrorEnvelope = commonapi.ErrorEnvelope
+
+func UserSuccessResponse(data *userdomain.User) UserEnvelope {
 	user := User{
 		ID:        data.ID,
 		CreatedAt: data.CreatedAt,
@@ -27,15 +44,15 @@ func UserSuccessResponse(data *userdomain.User) *fiber.Map {
 		LastName:  data.LastName,
 		Email:     data.Email,
 	}
-	return &fiber.Map{
-		"status": true,
-		"data":   user,
-		"error":  nil,
+	return UserEnvelope{
+		Status: true,
+		Data:   user,
+		Error:  nil,
 	}
 }
 
-func UsersSuccessResponse(data *[]userdomain.User) *fiber.Map {
-	var users []User
+func UsersSuccessResponse(data *[]userdomain.User) UsersEnvelope {
+	users := make([]User, 0, len(*data))
 	for _, u := range *data {
 		user := User{
 			ID:        u.ID,
@@ -48,18 +65,18 @@ func UsersSuccessResponse(data *[]userdomain.User) *fiber.Map {
 		users = append(users, user)
 	}
 
-	return &fiber.Map{
-		"status": true,
-		"data":   users,
-		"error":  nil,
-		"count":  len(*data),
+	return UsersEnvelope{
+		Status: true,
+		Data:   users,
+		Count:  len(users),
+		Error:  nil,
 	}
 }
 
-func UserErrorResponse(err error) *fiber.Map {
-	return &fiber.Map{
-		"status": false,
-		"data":   nil,
-		"error":  err.Error(),
+func UserErrorResponse(err error) UserErrorEnvelope {
+	return UserErrorEnvelope{
+		Status: false,
+		Data:   nil,
+		Error:  err.Error(),
 	}
 }

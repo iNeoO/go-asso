@@ -2,9 +2,10 @@ package swaggerapi
 
 import (
 	"github.com/gofiber/fiber/v2"
+
+	_ "github.com/ineoo/go-planigramme/swagger"
 )
 
-// RegisterRoutes wires the swagger endpoints.
 func RegisterRoutes(app fiber.Router) {
 	registerRoutes(app)
 }

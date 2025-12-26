@@ -10,10 +10,25 @@ import (
 	cryptoutils "github.com/ineoo/go-planigramme/pkg/utils"
 )
 
+// Login godoc
+// @Summary Login
+// @Description Authenticates a user, sets refresh cookie, and returns an access token.
+// @Tags auth
+// @Accept json
+// @Produce json
+// @Param payload body LoginRequest true "Credentials"
+// @Success 200 {object} AuthEnvelope
+// @Failure 400 {object} AuthErrorEnvelope
+// @Failure 401 {object} AuthErrorEnvelope
+// @Failure 500 {object} AuthErrorEnvelope
+// @Router /auth/login [post]
 func Login(userService *userdomain.Service, sessionService *sessiondomain.Service) fiber.Handler {
 	return func(c *fiber.Ctx) error {
 		payload := new(LoginRequest)
 		if err := c.BodyParser(payload); err != nil {
+			return c.Status(fiber.StatusBadRequest).JSON(AuthErrorResponse(errors.New("invalid request payload")))
+		}
+		if err := cryptoutils.NewValidator().Struct(payload); err != nil {
 			return c.Status(fiber.StatusBadRequest).JSON(AuthErrorResponse(errors.New("invalid request payload")))
 		}
 		u, err := userService.GetByEmail(payload.Email)
@@ -33,13 +48,13 @@ func Login(userService *userdomain.Service, sessionService *sessiondomain.Servic
 			return c.Status(fiber.StatusInternalServerError).JSON(AuthErrorResponse(errors.New("failed to generate refresh token")))
 		}
 
-		sesion := &sessiondomain.Session{
+		session := &sessiondomain.Session{
 			UserID:    u.ID,
 			ExpiresAt: refreshToken.ExpiresAt,
-			Token:     refreshToken.Token,
+			TokenHash: refreshToken.Token,
 		}
 
-		_, err = sessionService.Create(sesion)
+		_, err = sessionService.Create(session)
 		if err != nil {
 			return c.Status(fiber.StatusInternalServerError).JSON(AuthErrorResponse(errors.New("failed to create session")))
 		}
