@@ -1,0 +1,475 @@
+definitions:
+  authapi.AuthData:
+    properties:
+      expires_at:
+        type: integer
+      token:
+        type: string
+    type: object
+  authapi.AuthEnvelope:
+    properties:
+      data:
+        $ref: '#/definitions/authapi.AuthData'
+      error:
+        type: string
+      status:
+        type: boolean
+    type: object
+  authapi.AuthErrorEnvelope:
+    properties:
+      data:
+        type: object
+      error:
+        type: string
+      status:
+        type: boolean
+    type: object
+  authapi.LoginRequest:
+    properties:
+      email:
+        maxLength: 255
+        type: string
+      password:
+        maxLength: 72
+        minLength: 8
+        type: string
+    required:
+    - email
+    - password
+    type: object
+  meapi.MeErrorEnvelope:
+    properties:
+      data:
+        type: object
+      error:
+        type: string
+      status:
+        type: boolean
+    type: object
+  meapi.MeOrganizationsEnvelope:
+    properties:
+      count:
+        type: integer
+      data:
+        items:
+          $ref: '#/definitions/organizationapi.Organization'
+        type: array
+      error:
+        type: string
+      status:
+        type: boolean
+    type: object
+  meapi.MeProfileEnvelope:
+    properties:
+      data:
+        $ref: '#/definitions/userapi.User'
+      error:
+        type: string
+      status:
+        type: boolean
+    type: object
+  organizationapi.CreateOrganizationRequest:
+    properties:
+      name:
+        maxLength: 255
+        type: string
+    required:
+    - name
+    type: object
+  organizationapi.ErrorEnvelope:
+    properties:
+      data:
+        type: object
+      error:
+        type: string
+      status:
+        type: boolean
+    type: object
+  organizationapi.Organization:
+    properties:
+      created_at:
+        type: string
+      id:
+        type: string
+      name:
+        type: string
+      updated_at:
+        type: string
+    type: object
+  organizationapi.OrganizationEnvelope:
+    properties:
+      data:
+        $ref: '#/definitions/organizationapi.Organization'
+      error:
+        type: string
+      status:
+        type: boolean
+    type: object
+  organizationapi.OrganizationsEnvelope:
+    properties:
+      count:
+        type: integer
+      data:
+        items:
+          $ref: '#/definitions/organizationapi.Organization'
+        type: array
+      error:
+        type: string
+      status:
+        type: boolean
+    type: object
+  userapi.CreateUserRequest:
+    properties:
+      email:
+        maxLength: 255
+        type: string
+      first_name:
+        maxLength: 255
+        type: string
+      last_name:
+        maxLength: 255
+        type: string
+      password:
+        maxLength: 72
+        minLength: 8
+        type: string
+    required:
+    - email
+    - first_name
+    - last_name
+    - password
+    type: object
+  userapi.User:
+    properties:
+      created_at:
+        type: string
+      email:
+        type: string
+      first_name:
+        type: string
+      id:
+        type: string
+      last_name:
+        type: string
+      updated_at:
+        type: string
+    type: object
+  userapi.UserEnvelope:
+    properties:
+      data:
+        $ref: '#/definitions/userapi.User'
+      error:
+        type: string
+      status:
+        type: boolean
+    type: object
+  userapi.UserErrorEnvelope:
+    properties:
+      data:
+        type: object
+      error:
+        type: string
+      status:
+        type: boolean
+    type: object
+  userapi.UsersEnvelope:
+    properties:
+      count:
+        type: integer
+      data:
+        items:
+          $ref: '#/definitions/userapi.User'
+        type: array
+      error:
+        type: string
+      status:
+        type: boolean
+    type: object
+info:
+  contact:
+    email: go-planigramme@tuturu.io
+    name: go-planigramme
+  description: This is an auto-generated API Docs.
+  license:
+    name: MIT
+    url: https://mit-license.org/
+  termsOfService: http://swagger.io/terms/
+  title: API
+  version: "1.0"
+paths:
+  /auth/login:
+    post:
+      consumes:
+      - application/json
+      description: Authenticates a user, sets refresh cookie, and returns an access
+        token.
+      parameters:
+      - description: Credentials
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/authapi.LoginRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/authapi.AuthEnvelope'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/authapi.AuthErrorEnvelope'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/authapi.AuthErrorEnvelope'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/authapi.AuthErrorEnvelope'
+      summary: Login
+      tags:
+      - auth
+  /me/organizations:
+    get:
+      description: Returns organizations linked to the authenticated user.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/meapi.MeOrganizationsEnvelope'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/meapi.MeErrorEnvelope'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/meapi.MeErrorEnvelope'
+      security:
+      - BearerAuth: []
+      summary: List organizations for current user
+      tags:
+      - me
+  /me/profile:
+    get:
+      description: Returns the user authenticated.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/meapi.MeProfileEnvelope'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/meapi.MeErrorEnvelope'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/meapi.MeErrorEnvelope'
+      security:
+      - BearerAuth: []
+      summary: Get user authenticated
+      tags:
+      - me
+  /organizations:
+    get:
+      description: Returns all organizations. Requires bearer auth or refresh cookie.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/organizationapi.OrganizationsEnvelope'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/organizationapi.ErrorEnvelope'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/organizationapi.ErrorEnvelope'
+      security:
+      - BearerAuth: []
+      summary: List organizations
+      tags:
+      - organizations
+    post:
+      consumes:
+      - application/json
+      description: Creates an organization. Requires bearer auth or refresh cookie.
+      parameters:
+      - description: Organization payload
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/organizationapi.CreateOrganizationRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/organizationapi.OrganizationEnvelope'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/organizationapi.ErrorEnvelope'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/organizationapi.ErrorEnvelope'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/organizationapi.ErrorEnvelope'
+      security:
+      - BearerAuth: []
+      summary: Create organization
+      tags:
+      - organizations
+  /organizations/{id}:
+    get:
+      description: Returns a single organization. Requires bearer auth or refresh
+        cookie.
+      parameters:
+      - description: Organization ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/organizationapi.OrganizationEnvelope'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/organizationapi.ErrorEnvelope'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/organizationapi.ErrorEnvelope'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/organizationapi.ErrorEnvelope'
+      security:
+      - BearerAuth: []
+      summary: Get organization by ID
+      tags:
+      - organizations
+  /organizations/user:
+    get:
+      description: Returns organizations linked to the authenticated user. Requires
+        bearer auth or refresh cookie.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/organizationapi.OrganizationsEnvelope'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/organizationapi.ErrorEnvelope'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/organizationapi.ErrorEnvelope'
+      security:
+      - BearerAuth: []
+      summary: List organizations for current user
+      tags:
+      - organizations
+  /users:
+    get:
+      description: Returns all users.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/userapi.UsersEnvelope'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/userapi.UserErrorEnvelope'
+      summary: List users
+      tags:
+      - users
+    post:
+      consumes:
+      - application/json
+      description: Creates a new user.
+      parameters:
+      - description: User payload
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/userapi.CreateUserRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/userapi.UserEnvelope'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/userapi.UserErrorEnvelope'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/userapi.UserErrorEnvelope'
+      summary: Create user
+      tags:
+      - users
+  /users/{id}:
+    get:
+      description: Returns a single user.
+      parameters:
+      - description: User ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/userapi.UserEnvelope'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/userapi.UserErrorEnvelope'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/userapi.UserErrorEnvelope'
+      summary: Get user by ID
+      tags:
+      - users
+securityDefinitions:
+  BearerAuth:
+    in: header
+    name: Authorization
+    type: apiKey
+swagger: "2.0"
