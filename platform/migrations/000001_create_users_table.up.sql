@@ -27,7 +27,6 @@ CREATE INDEX sessions_expires_at_idx ON sessions(expires_at);
 
 CREATE TABLE roles_enum (
     id VARCHAR(50) DEFAULT NOT NULL PRIMARY KEY,
-    name VARCHAR(50) UNIQUE NOT NULL
 );
 
 
@@ -68,7 +67,6 @@ CREATE INDEX activities_organization_id_starts_at_idx ON activities (organizatio
 
 CREATE TABLE registrations_status_enum (
     id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
-    name VARCHAR(50) UNIQUE NOT NULL
 );
 
 CREATE TABLE registrations (
@@ -83,3 +81,15 @@ CREATE TABLE registrations (
 
 CREATE INDEX registrations_user_id_idx ON registrations(user_id);
 CREATE INDEX registrations_activity_id_idx ON registrations(activity_id);
+
+INSERT INTO roles_enum (id, name) VALUES
+    ('CREATOR'),
+    ('ADMINISTRATOR'),
+    ('TEAM_MEMBER'),
+    ('VALIDATED'),
+    ('NOT_VALIDATED')
+
+INSERT INTO registrations_status_enum (id) VALUES
+    ('PENDING'),
+    ('CONFIRMED'),
+    ('CANCELLED');

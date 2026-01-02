@@ -165,7 +165,7 @@ func LeaveOrganization(service *membership.Service) fiber.Handler {
 			return c.Status(fiber.StatusNotFound).JSON(OrganizationErrorResponse("failed to get organization user"))
 		}
 
-		if organizationUser.RoleID == organization.RoleCreator {
+		if organization.HasAdminAccess(organizationUser.RoleID) {
 			return c.Status(fiber.StatusForbidden).JSON(OrganizationErrorResponse("creator cannot leave the organization"))
 		}
 
@@ -217,7 +217,7 @@ func UpdateOrganizationUserRole(service *membership.Service) fiber.Handler {
 			return c.Status(fiber.StatusNotFound).JSON(OrganizationErrorResponse("organization user not found"))
 		}
 
-		if organizationUser.RoleID == organization.RoleCreator || organizationUser.RoleID == organization.RoleAdministrator {
+		if !organization.HasAdminAccess(organizationUser.RoleID) {
 			return c.Status(fiber.StatusForbidden).JSON(OrganizationErrorResponse("insufficient permissions to update user role"))
 		}
 
@@ -226,7 +226,7 @@ func UpdateOrganizationUserRole(service *membership.Service) fiber.Handler {
 			return c.Status(fiber.StatusNotFound).JSON(OrganizationErrorResponse("organization user not found"))
 		}
 
-		if targetUser.RoleID == organization.RoleCreator || targetUser.RoleID == organization.RoleAdministrator {
+		if organization.HasAdminAccess(targetUser.RoleID) {
 			return c.Status(fiber.StatusForbidden).JSON(OrganizationErrorResponse("cannot change creator/admin role"))
 		}
 
@@ -269,11 +269,11 @@ func ListOrganizationUsers(service *membership.Service) fiber.Handler {
 			return c.Status(fiber.StatusNotFound).JSON(OrganizationErrorResponse("organization user not found"))
 		}
 
-		if currentUser.RoleID != organization.RoleCreator && currentUser.RoleID != organization.RoleAdministrator {
+		if !organization.HasAdminAccess(currentUser.RoleID) {
 			return c.Status(fiber.StatusForbidden).JSON(OrganizationErrorResponse("insufficient permissions to list organization users"))
 		}
 
-		users, err := service.ListOrganizationUsers(id)
+		users, err := service.ListOrganizationMembers(id)
 		if err != nil {
 			return c.Status(fiber.StatusInternalServerError).JSON(OrganizationErrorResponse("failed to list organization users"))
 		}

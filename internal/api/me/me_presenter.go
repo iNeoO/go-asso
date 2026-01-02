@@ -3,7 +3,9 @@ package meapi
 import (
 	commonapi "github.com/ineoo/go-planigramme/internal/api/common"
 	organizationapi "github.com/ineoo/go-planigramme/internal/api/organization"
+	activityapi "github.com/ineoo/go-planigramme/internal/api/organization/activity"
 	userapi "github.com/ineoo/go-planigramme/internal/api/user"
+	activitydomain "github.com/ineoo/go-planigramme/pkg/activity"
 	organizationdomain "github.com/ineoo/go-planigramme/pkg/organization"
 	userdomain "github.com/ineoo/go-planigramme/pkg/user"
 )
@@ -31,4 +33,8 @@ func MeProfileSuccessResponse(data *userdomain.User) MeProfileEnvelope {
 
 func MeOrganizationSuccessResponse(data []organizationdomain.Organization) MeOrganizationsEnvelope {
 	return organizationapi.OrganizationsSuccessResponse(data)
+}
+
+func MeActivitiesSuccessResponse(data []activitydomain.ActivityWithCreator) activityapi.ActivitiesEnvelope {
+	return activityapi.ActivitiesListSuccessResponse(data)
 }

@@ -1,4 +1,4 @@
-package organizationapi
+package activityapi
 
 import (
 	"github.com/gofiber/fiber/v2"
@@ -6,19 +6,16 @@ import (
 
 	activitydomain "github.com/ineoo/go-planigramme/pkg/activity"
 	membershipdomain "github.com/ineoo/go-planigramme/pkg/membership"
-	organizationdomain "github.com/ineoo/go-planigramme/pkg/organization"
 	sessiondomain "github.com/ineoo/go-planigramme/pkg/session"
 )
 
 func RegisterRoutes(app fiber.Router, db *sqlx.DB) {
-	organizationRepo := organizationdomain.NewRepository(db)
+	activityRepo := activitydomain.NewRepository(db)
 	membershipRepo := membershipdomain.NewRepository(db)
 	sessionRepo := sessiondomain.NewRepository(db)
-	activityRepo := activitydomain.NewRepository(db)
-	organizationService := organizationdomain.NewService(*organizationRepo)
 	membershipService := membershipdomain.NewService(*membershipRepo)
 	sessionService := sessiondomain.NewService(*sessionRepo)
 	activityService := activitydomain.NewService(*activityRepo, *membershipService)
 
-	registerRoutes(app, organizationService, membershipService, sessionService, activityService)
+	registerRoutes(app, activityService, membershipService, sessionService)
 }

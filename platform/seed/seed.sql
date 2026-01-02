@@ -1,13 +1,5 @@
 BEGIN;
 
-INSERT INTO roles_enum (id, name) VALUES
-    ('CREATOR', 'creator'),
-    ('ADMINISTRATOR', 'admin'),
-    {'TEAM_MEMBER', 'teamMember'},
-    ('VALIDATED', 'validated'),
-    ('NOT_VALIDATED', 'notValidated')
-ON CONFLICT (name) DO NOTHING;
-
 INSERT INTO organizations (id, name) VALUES
     ('aaaaaaa1-aaaa-aaaa-aaaa-aaaaaaaaaaa1', 'Handball Club'),
     ('aaaaaaa2-aaaa-aaaa-aaaa-aaaaaaaaaaa2', 'Football Club'),

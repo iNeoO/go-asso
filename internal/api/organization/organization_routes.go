@@ -3,12 +3,14 @@ package organizationapi
 import (
 	"github.com/gofiber/fiber/v2"
 	authapi "github.com/ineoo/go-planigramme/internal/api/auth"
+	activityapi "github.com/ineoo/go-planigramme/internal/api/organization/activity"
+	activitydomain "github.com/ineoo/go-planigramme/pkg/activity"
 	membershipdomain "github.com/ineoo/go-planigramme/pkg/membership"
 	organizationdomain "github.com/ineoo/go-planigramme/pkg/organization"
 	sessiondomain "github.com/ineoo/go-planigramme/pkg/session"
 )
 
-func registerRoutes(app fiber.Router, organizationService *organizationdomain.Service, membershipService *membershipdomain.Service, sessionService *sessiondomain.Service) {
+func registerRoutes(app fiber.Router, organizationService *organizationdomain.Service, membershipService *membershipdomain.Service, sessionService *sessiondomain.Service, activityService *activitydomain.Service) {
 	organizationGroup := app.Group("/organizations")
 	organizationGroup.Get("/", authapi.Protected(sessionService), GetOrganizations(organizationService))
 	organizationGroup.Get("/:id", authapi.Protected(sessionService), GetOrganization(organizationService))
@@ -17,4 +19,6 @@ func registerRoutes(app fiber.Router, organizationService *organizationdomain.Se
 	organizationGroup.Delete("/:id/leave", authapi.Protected(sessionService), LeaveOrganization(membershipService))
 	organizationGroup.Patch("/:id/users/role", authapi.Protected(sessionService), UpdateOrganizationUserRole(membershipService))
 	organizationGroup.Post("/", authapi.Protected(sessionService), CreateOrganization(organizationService, membershipService))
+	organizationGroup.Post("/:id/activities", authapi.Protected(sessionService), activityapi.CreateActivity(*organizationService, *activityService, *membershipService))
+	organizationGroup.Get("/:id/activities", authapi.Protected(sessionService), activityapi.GetActivities(*organizationService, *activityService, *membershipService))
 }

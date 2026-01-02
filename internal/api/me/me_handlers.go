@@ -3,6 +3,7 @@ package meapi
 import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/google/uuid"
+	"github.com/ineoo/go-planigramme/pkg/activity"
 	"github.com/ineoo/go-planigramme/pkg/organization"
 	"github.com/ineoo/go-planigramme/pkg/user"
 )
@@ -56,5 +57,21 @@ func GetOrganizations(organization *organization.Service) fiber.Handler {
 		}
 
 		return c.JSON(MeOrganizationSuccessResponse(organizations))
+	}
+}
+
+func GetActivities(activityService *activity.Service) fiber.Handler {
+	return func(c *fiber.Ctx) error {
+		userId, ok := c.Locals("user_id").(uuid.UUID)
+		if !ok {
+			return c.Status(fiber.StatusUnauthorized).JSON(MeErrorResponse("unauthorized"))
+		}
+
+		activities, err := activityService.ListActivitiesForUser(userId)
+		if err != nil {
+			return c.Status(fiber.StatusInternalServerError).JSON(MeErrorResponse("failed to retrieve activities"))
+		}
+
+		return c.JSON(MeActivitiesSuccessResponse(activities))
 	}
 }

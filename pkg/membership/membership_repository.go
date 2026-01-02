@@ -18,7 +18,7 @@ type OrganizationUser struct {
 	UpdatedAt      time.Time           `db:"updated_at"`
 }
 
-type OrganizationMember struct {
+type OrganizationMemberRecord struct {
 	UserID    uuid.UUID           `db:"user_id"`
 	RoleID    organization.RoleID `db:"role_id"`
 	CreatedAt time.Time           `db:"created_at"`
@@ -64,7 +64,39 @@ func (r *Repository) GetOrganizationUser(id uuid.UUID, userID uuid.UUID) (*Organ
 	return &organizationUser, nil
 }
 
-func (r *Repository) ListOrganizationUsers(id uuid.UUID) ([]OrganizationMember, error) {
+func (r *Repository) GetOrganizationMember(userID uuid.UUID, organizationID uuid.UUID) (*OrganizationMember, error) {
+	const query = `
+	SELECT 
+		uo.user_id,
+		uo.role_id,
+		uo.created_at,
+		uo.updated_at,
+		u.first_name,
+		u.last_name,
+		u.email
+	FROM user_organizations uo
+	JOIN users u ON u.id = uo.user_id
+	WHERE uo.organization_id = $1 AND uo.user_id = $2
+	`
+
+	organizationMember := OrganizationMemberRecord{}
+	if err := r.db.GetContext(context.Background(), &organizationMember, query, organizationID, userID); err != nil {
+		return nil, err
+	}
+	return &OrganizationMember{
+		UserID:    organizationMember.UserID,
+		RoleID:    organizationMember.RoleID,
+		CreatedAt: organizationMember.CreatedAt,
+		UpdatedAt: organizationMember.UpdatedAt,
+		User: OrganizationMemberUser{
+			FirstName: organizationMember.FirstName,
+			LastName:  organizationMember.LastName,
+			Email:     organizationMember.Email,
+		},
+	}, nil
+}
+
+func (r *Repository) ListOrganizationMembers(id uuid.UUID) ([]OrganizationMember, error) {
 	const query = `
 	SELECT 
 		uo.user_id,
@@ -78,15 +110,41 @@ func (r *Repository) ListOrganizationUsers(id uuid.UUID) ([]OrganizationMember, 
 	JOIN users u ON u.id = uo.user_id
 	WHERE uo.organization_id = $1
 	`
-	organizationUsers := make([]OrganizationMember, 0)
+
+	organizationUsers := make([]OrganizationMemberRecord, 0)
 	if err := r.db.SelectContext(context.Background(), &organizationUsers, query, id); err != nil {
 		return nil, err
 	}
-	return organizationUsers, nil
+
+	members := make([]OrganizationMember, 0, len(organizationUsers))
+	for _, ou := range organizationUsers {
+		members = append(members, OrganizationMember{
+			UserID:    ou.UserID,
+			RoleID:    ou.RoleID,
+			CreatedAt: ou.CreatedAt,
+			UpdatedAt: ou.UpdatedAt,
+			User: OrganizationMemberUser{
+				FirstName: ou.FirstName,
+				LastName:  ou.LastName,
+				Email:     ou.Email,
+			},
+		})
+	}
+
+	return members, nil
 }
 
 func (r *Repository) Leave(id uuid.UUID, userID uuid.UUID) error {
 	const query = `DELETE FROM user_organizations WHERE user_id=$1 AND organization_id=$2`
 	_, err := r.db.ExecContext(context.Background(), query, userID, id)
 	return err
+}
+
+func (r *Repository) ListOrganizationsForUser(userID uuid.UUID) ([]OrganizationUser, error) {
+	const query = `SELECT user_id, organization_id, role_id, created_at, updated_at FROM user_organizations WHERE user_id = $1`
+	organizationUsers := make([]OrganizationUser, 0)
+	if err := r.db.SelectContext(context.Background(), &organizationUsers, query, userID); err != nil {
+		return nil, err
+	}
+	return organizationUsers, nil
 }

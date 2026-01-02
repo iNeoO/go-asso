@@ -49,6 +49,19 @@ func (r *Repository) List() ([]Organization, error) {
 	return organizations, nil
 }
 
+func (r *Repository) ListByUserIdWithRoles(id uuid.UUID, roles []RoleID) ([]uuid.UUID, error) {
+	const query = `
+	SELECT o.id FROM organizations o
+	JOIN user_organizations uo ON o.id = uo.organization_id
+	WHERE uo.user_id = $1 AND uo.role_id IN $2
+	`
+	organizationIds := make([]uuid.UUID, 0)
+	if err := r.db.SelectContext(context.Background(), &organizationIds, query, id, roles); err != nil {
+		return nil, err
+	}
+	return organizationIds, nil
+}
+
 func (r *Repository) ListByUserId(userId uuid.UUID) ([]Organization, error) {
 	const query = `
 	SELECT o.* FROM organizations o

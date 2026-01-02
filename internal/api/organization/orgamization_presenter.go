@@ -24,16 +24,6 @@ type OrganizationUser struct {
 	UpdatedAt      time.Time           `json:"updated_at"`
 }
 
-type OrganizationMember struct {
-	UserID    uuid.UUID           `json:"user_id"`
-	RoleID    organization.RoleID `json:"role_id"`
-	CreatedAt time.Time           `json:"created_at"`
-	UpdatedAt time.Time           `json:"updated_at"`
-	FirstName string              `json:"first_name"`
-	LastName  string              `json:"last_name"`
-	Email     string              `json:"email"`
-}
-
 // @name OrganizationEnvelope
 type OrganizationEnvelope struct {
 	Status bool         `json:"status"`
@@ -64,10 +54,10 @@ type OrganizationUsersEnvelope struct {
 }
 
 type OrganizationMembersEnvelope struct {
-	Status bool                 `json:"status"`
-	Data   []OrganizationMember `json:"data"`
-	Count  int                  `json:"count"`
-	Error  *string              `json:"error"`
+	Status bool                            `json:"status"`
+	Data   []membership.OrganizationMember `json:"data"`
+	Count  int                             `json:"count"`
+	Error  *string                         `json:"error"`
 }
 
 // @name ErrorEnvelope
@@ -131,23 +121,11 @@ func OrganizationErrorResponse(message string) ErrorEnvelope {
 }
 
 func OrganizationMembersSuccessResponse(organizationUsers []membership.OrganizationMember) OrganizationMembersEnvelope {
-	users := make([]OrganizationMember, 0, len(organizationUsers))
-	for _, ou := range organizationUsers {
-		users = append(users, OrganizationMember{
-			UserID:    ou.UserID,
-			RoleID:    ou.RoleID,
-			CreatedAt: ou.CreatedAt,
-			UpdatedAt: ou.UpdatedAt,
-			FirstName: ou.FirstName,
-			LastName:  ou.LastName,
-			Email:     ou.Email,
-		})
-	}
 
 	return OrganizationMembersEnvelope{
 		Status: true,
-		Data:   users,
-		Count:  len(users),
+		Data:   organizationUsers,
+		Count:  len(organizationUsers),
 		Error:  nil,
 	}
 }
